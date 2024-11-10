@@ -1,5 +1,7 @@
 package com.example.jumpingmonkey;
 
+/**
+ */
 public class Vector2D {
     private final double m_x, m_y;
 
@@ -38,7 +40,7 @@ public class Vector2D {
     }
 
     public double getDirection() {
-        return Math.atan(m_y / m_x);
+        return Math.atan2(m_y , m_x);
     }
 
     public Vector2D plus(Vector2D other) {
@@ -56,5 +58,23 @@ public class Vector2D {
 
     public Vector2D rotate(double deltaDirection) {
         return new Vector2D(getDistance(), getDirection() + deltaDirection);
+    }
+    public Vector2D withDistance(double newDistance) {
+        double direction = getDirection();
+        return new Vector2D(newDistance * Math.cos(direction), newDistance * Math.sin(direction));
+    }
+
+    /**
+     * A static function to linearly interpolate between two Vector2D objects.
+     *
+     * @param start The starting vector.
+     * @param end The ending vector.
+     * @param t The interpolation parameter, where 0 <= t <= 1.
+     * @return A new Vector2D that is the result of the interpolation.
+     */
+    public static Vector2D lerp(Vector2D start, Vector2D end, double t) {
+        double x = start.getX() + (end.getX() - start.getX()) * t;
+        double y = start.getY() + (end.getY() - start.getY()) * t;
+        return new Vector2D(x, y);
     }
 }
