@@ -13,7 +13,7 @@ public class BranchPoint {
     public final Vector2D rootPoint;
     public final Vector2D lowerRootPoint;
     protected int r, g, b;
-    private double timeSinceRelease = 0;
+    private double timeSinceRelease = 2;
 
     public BranchPoint(double x, double y) {
         Random random = new Random();
@@ -70,7 +70,7 @@ public class BranchPoint {
     }
 
     public Vector2D getSpringForce(double x, double y) {
-        return RubberBandForceCalculator.calculateForce(new Vector2D(this.mainPoint.getX(), this.mainPoint.getY()), new Vector2D(x, y), 0.4);
+        return RubberBandForceCalculator.calculateForce(new Vector2D(this.mainPoint.getX(), this.mainPoint.getY()), new Vector2D(x, y), 0);
     }
 
     public double getX() {

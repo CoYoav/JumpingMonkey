@@ -73,7 +73,7 @@ public class Vector2D {
      * @return A new Vector2D that is the result of the interpolation.
      */
     public static Vector2D lerp(Vector2D start, Vector2D end, double t) {
-        double x = start.getX() + (end.getX() - start.getX()) * t;
+        double x  = start.getX() + (end.getX() - start.getX()) * t;
         double y = start.getY() + (end.getY() - start.getY()) * t;
         return new Vector2D(x, y);
     }

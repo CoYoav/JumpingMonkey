@@ -2,28 +2,29 @@ package com.example.jumpingmonkey;
 
 
 import static com.example.jumpingmonkey.Constants.DRAG_COEFFICIENT;
+import static com.example.jumpingmonkey.Constants.FLOWER_OUTER_RADIUS;
 import static com.example.jumpingmonkey.Constants.WIDTH_METERS;
 
 public class Monkey {
     private double x, y;
     private Vector2D velocity;
-    private boolean onJump;
-    private double mass = 1.2;
+    private double mass = 2;
     private BranchPoint currentPoint;
-    private double radius = 0.3;
+    private double radius = 0.45;
+    private boolean onJump;
     private boolean onDrag;
 
     public Monkey(BranchPoint startPoint) {
         this.x = 2.5;
         this.y = 4;
         this.currentPoint = startPoint;
-        this.velocity = new Vector2D(0, 4);
-        this.onJump = true;
-        this.onDrag = false;
+        this.velocity = new Vector2D(0, 0);
+        onJump = true;
+        onDrag = false;
     }
 
-    public boolean onDrag() {
-        return this.onDrag;
+    public boolean hasBrunch(){
+        return this.currentPoint != null;
     }
 
     private Vector2D getForce() {
@@ -40,9 +41,9 @@ public class Monkey {
         }
 
         // Air resistance (drag force)
-        double dragCoeff = DRAG_COEFFICIENT /(( this.currentPoint != null && !this.onJump)? 1: 50);
-            Vector2D drag = velocity.mul(-dragCoeff * velocity.getDistance());
-            sigmaForce = sigmaForce.plus(drag);
+        double dragCoeff = DRAG_COEFFICIENT / ((this.currentPoint != null && !this.onJump) ? 0.7 : 50);
+        Vector2D drag = velocity.mul(-dragCoeff * velocity.getDistance());
+        sigmaForce = sigmaForce.plus(drag);
 
         return sigmaForce;
     }
@@ -89,8 +90,8 @@ public class Monkey {
 
     public void catchPoint(BranchPoint point) {
         if (this.currentPoint != null) return;
-        if(!point.isAvailable()) return;
-        if (Math.sqrt(Math.pow(point.getX() - this.x, 2) + Math.pow(point.getY() - this.y, 2)) < this.radius) {
+        if (!point.isAvailable()) return;
+        if (Math.sqrt(Math.pow(point.getX() - this.x, 2) + Math.pow(point.getY() - this.y, 2)) < this.radius + FLOWER_OUTER_RADIUS) {
             this.currentPoint = point;
             this.onJump = false;
             point.hold();
@@ -131,7 +132,8 @@ public class Monkey {
 
     public void drag(double x, double y) {
         if (this.currentPoint == null) return;
-        if(Math.sqrt(Math.pow(x-this.x,2)+Math.pow(y-this.y,2))>this.radius) return;
+        if (Math.sqrt(Math.pow(x - this.x, 2) + Math.pow(y - this.y, 2)) > this.radius * 2.5)
+            return;
         this.velocity = new Vector2D(0, 0);
         this.onDrag = true;
         setPosition(x, y);
@@ -139,15 +141,29 @@ public class Monkey {
     }
 
     public void setPosition(double x, double y) {
-        if(this.currentPoint == null) return;
-        Vector2D brunchToPoint = new Vector2D(x-this.currentPoint.getX(), y - this.currentPoint.getY());
-        if(brunchToPoint.getDistance()>1.8) brunchToPoint = brunchToPoint.withDistance(1.8);
-        this.x = this.currentPoint.getX()+brunchToPoint.getX();
+        if (this.currentPoint == null) return;
+        Vector2D brunchToPoint = new Vector2D(x - this.currentPoint.getX(), y - this.currentPoint.getY());
+        if (brunchToPoint.getDistance() > 1.8) brunchToPoint = brunchToPoint.withDistance(1.8);
+        this.x = this.currentPoint.getX() + brunchToPoint.getX();
         this.y = this.currentPoint.getY() + brunchToPoint.getY();
     }
 
     public void jump() {
-        this.onDrag = false;
         this.onJump = true;
+        this.onDrag = false;
     }
+
+    public boolean isOnJump() {
+        return onJump;
+    }
+
+    public boolean isOnDrag() {
+        return onDrag;
+    }
+    /*public enum State{
+        HOLD,
+        FALL,
+        CATCH,
+        JUMP;
+    }*/
 }
