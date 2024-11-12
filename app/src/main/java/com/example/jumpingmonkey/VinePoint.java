@@ -14,7 +14,7 @@ public class VinePoint extends BranchPoint {
         super(x1, y1);
         Random random = new Random();
         timeCount = 0;
-        cycleTime = random.nextInt(3)+2;
+        cycleTime = Math.sqrt(Math.pow(x1=x2,2)+Math.pow(y1-y2,2))/2;
         secondPoint = new Vector2D(x2, y2);
         firstPoint = new Vector2D(x1, y1);
 

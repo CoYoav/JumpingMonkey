@@ -8,19 +8,17 @@ import static com.example.jumpingmonkey.Constants.WIDTH_METERS;
 public class Monkey {
     private double x, y;
     private Vector2D velocity;
-    private double mass = 2;
+    private double mass = 3;
     private BranchPoint currentPoint;
     private double radius = 0.45;
-    private boolean onJump;
-    private boolean onDrag;
+    private State state;
 
     public Monkey(BranchPoint startPoint) {
         this.x = 2.5;
         this.y = 4;
         this.currentPoint = startPoint;
         this.velocity = new Vector2D(0, 0);
-        onJump = true;
-        onDrag = false;
+        state = State.FALL;
     }
 
     public boolean hasBrunch(){
@@ -31,7 +29,7 @@ public class Monkey {
         Vector2D sigmaForce = new Vector2D(0, 0);
 
         // Gravity force
-        Vector2D gravity = new Vector2D(0, -10 * mass);
+        Vector2D gravity = new Vector2D(0, -12 * mass * (state.equals(State.CATCH)? 5: 1));
         sigmaForce = sigmaForce.plus(gravity);
 
         // Spring force from the current branch point
@@ -41,7 +39,7 @@ public class Monkey {
         }
 
         // Air resistance (drag force)
-        double dragCoeff = DRAG_COEFFICIENT / ((this.currentPoint != null && !this.onJump) ? 0.7 : 50);
+        double dragCoeff = state.equals(State.CATCH)? DRAG_COEFFICIENT: 0;
         Vector2D drag = velocity.mul(-dragCoeff * velocity.getDistance());
         sigmaForce = sigmaForce.plus(drag);
 
@@ -51,10 +49,9 @@ public class Monkey {
     public void dutyCycle(double time) {
         if (this.currentPoint != null && this.currentPoint.isCollapsed()) {
             this.currentPoint = null;
-            this.onJump = true;
-            this.onDrag = false;
+            this.state = State.FALL;
         }
-        if (!this.onDrag) {
+        if (!this.state.equals(State.HOLD)) {
             Vector2D sigmaForce = getForce();
             Vector2D acceleration = sigmaForce.mul(1 / this.mass);
             this.velocity = this.velocity.plus(acceleration.mul(time));
@@ -65,7 +62,7 @@ public class Monkey {
 
             this.x += this.velocity.getX() * time;
             this.y += this.velocity.getY() * time;
-            if (this.onJump && this.currentPoint != null && Math.sqrt(Math.pow(this.x - currentPoint.getX(), 2) + Math.pow(this.y - currentPoint.getY(), 2)) < this.radius) {
+            if (this.state.equals(State.JUMP) && this.currentPoint != null && Math.sqrt(Math.pow(this.x - currentPoint.getX(), 2) + Math.pow(this.y - currentPoint.getY(), 2)) < this.radius) {
                 this.currentPoint.release();
                 this.currentPoint = null;
             }
@@ -93,7 +90,7 @@ public class Monkey {
         if (!point.isAvailable()) return;
         if (Math.sqrt(Math.pow(point.getX() - this.x, 2) + Math.pow(point.getY() - this.y, 2)) < this.radius + FLOWER_OUTER_RADIUS) {
             this.currentPoint = point;
-            this.onJump = false;
+            this.state = State.CATCH;
             point.hold();
         }
     }
@@ -135,7 +132,7 @@ public class Monkey {
         if (Math.sqrt(Math.pow(x - this.x, 2) + Math.pow(y - this.y, 2)) > this.radius * 2.5)
             return;
         this.velocity = new Vector2D(0, 0);
-        this.onDrag = true;
+        this.state = State.HOLD;
         setPosition(x, y);
 
     }
@@ -149,21 +146,20 @@ public class Monkey {
     }
 
     public void jump() {
-        this.onJump = true;
-        this.onDrag = false;
+        this.state = State.JUMP;
     }
 
     public boolean isOnJump() {
-        return onJump;
+        return this.state.equals(State.JUMP);
     }
 
     public boolean isOnDrag() {
-        return onDrag;
+        return this.state.equals(State.HOLD);
     }
-    /*public enum State{
+    public enum State{
         HOLD,
         FALL,
         CATCH,
         JUMP;
-    }*/
+    }
 }

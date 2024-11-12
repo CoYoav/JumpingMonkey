@@ -251,11 +251,11 @@ public class MyCanvas extends View {
             BranchPoint source = brunches.get(brunches.size() - 1);
 
             double x = (r.nextInt(38) / 10.0) + 0.6;
-            double y = (r.nextInt(35) / 10.0) + 1 + source.getY();
-            if (r.nextInt(7) != 0) brunches.add(new BranchPoint(x, y));
+            double y = (r.nextInt(40) / 10.0) + 2 + source.getY();
+            if (r.nextInt(6) != 0) brunches.add(new BranchPoint(x, y));
             else {
                 double x2 = (r.nextInt(38) / 10.0) + 0.6;
-                double y2 = (r.nextInt(25) / 10.0) + 1 + y;
+                double y2 = (r.nextInt(35) / 10.0) + 1.5 + y;
                 brunches.add(new VinePoint(x, y, x2, y2));
 
             }
