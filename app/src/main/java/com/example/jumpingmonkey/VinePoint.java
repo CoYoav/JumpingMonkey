@@ -1,6 +1,5 @@
 package com.example.jumpingmonkey;
 
-import android.util.Log;
 
 import java.util.Random;
 
@@ -9,15 +8,16 @@ public class VinePoint extends BranchPoint {
     private double timeCount;
     private Vector2D secondPoint;
     private Vector2D firstPoint;
+    private double top;
 
-    public VinePoint(double x1, double y1, double x2, double y2) {
-        super(x1, y1);
+    public VinePoint(double x1, double y1, double x2, double y2, double t) {
+        super((x1+x2)/2, (y1+y2)/2);
         Random random = new Random();
-        timeCount = 0;
-        cycleTime = Math.sqrt(Math.pow(x1=x2,2)+Math.pow(y1-y2,2))/2;
+        cycleTime = Math.sqrt(Math.pow(x1-x2,2)+Math.pow(y1-y2,2))/2;
+        timeCount = t*cycleTime;
         secondPoint = new Vector2D(x2, y2);
         firstPoint = new Vector2D(x1, y1);
-
+        top = Math.max(y1, y2);
         r = 36 + random.nextInt(40) - 20;
         g = 199 + random.nextInt(40) - 20;
         b = 139 + random.nextInt(40) - 20;
@@ -38,6 +38,10 @@ public class VinePoint extends BranchPoint {
         updateCurrentPoint();
         super.dutyCycle(time);
         timeCount += time;
+    }
+    @Override
+    public double getTop(){
+        return this.top;
     }
 
 }

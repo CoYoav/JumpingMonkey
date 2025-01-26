@@ -3,6 +3,7 @@ package com.example.jumpingmonkey;
 import static com.example.jumpingmonkey.Constants.FLOWER_INNER_RADIUS;
 import static com.example.jumpingmonkey.Constants.FLOWER_OUTER_RADIUS;
 import static com.example.jumpingmonkey.Constants.SCROLL_KP;
+import static com.example.jumpingmonkey.Constants.STONE_RADIUS;
 import static com.example.jumpingmonkey.Constants.WIDTH_METERS;
 
 import android.content.Context;
@@ -15,7 +16,6 @@ import android.graphics.Path;
 import android.graphics.Rect;
 import android.graphics.Typeface;
 import android.util.AttributeSet;
-import android.util.Log;
 import android.view.MotionEvent;
 import android.view.View;
 import android.os.Handler;
@@ -27,10 +27,10 @@ import java.util.Random;
 public class MyCanvas extends View {
 
     // Add a Bitmap field for the background image
-    private Bitmap backgroundBitmap;
+    private Bitmap backgroundBitmap, stoneBitmap, pauseBitmap, playBitmap, lavaBitmap;
     private final Paint m_brush;
     private final Paint m_Textbrush;
-    private final ArrayList<BranchPoint> brunches = new ArrayList<>();
+    private final ArrayList<Segment> brunches = new ArrayList<>();
     private double meterToPixels;
     private double screenTopMeters;
     private final Monkey george = new Monkey(null);
@@ -38,28 +38,30 @@ public class MyCanvas extends View {
     private final int FRAME_RATE = 16; // 20ms per frame for 50 FPS
     private int maxHeight = 0;
     private boolean gameOver = false;
+    private boolean pause = false;
+    private Rect pausePlayArea;
     private final Runnable gameLoop = new Runnable() {
         @Override
         public void run() {
-            Log.d("Velocity","velocity y = " + george.getVelocity().getY());
-            if (!gameOver) {
+            if (!gameOver && !pause) {
                 maxHeight = Math.max(maxHeight, (int) george.getY());
-                if(george.hasBrunch()) {
-                   double error = george.getCurrentPoint().getY() + 0.7 * getHeight() / meterToPixels - screenTopMeters;
-                   screenTopMeters += SCROLL_KP * error;
-                }
-                else {
-                    double error  = george.getY() + 0.7 * getHeight() / meterToPixels - screenTopMeters;
+                if (george.hasBrunch()) {
+                    double error = george.getCurrentPoint().getY() + 0.7 * getHeight() / meterToPixels - screenTopMeters;
+                    screenTopMeters += SCROLL_KP * error;
+                } else {
+                    double error = george.getY() + 0.7 * getHeight() / meterToPixels - screenTopMeters;
                     screenTopMeters += SCROLL_KP * error;
                 }
-                updateBrunches();
                 for (int i = 0; i < brunches.size(); i++) {
-                    brunches.get(i).dutyCycle(FRAME_RATE / 1000.0);
-                    george.catchPoint(brunches.get(i));
+                    Segment segment = brunches.get(i);
+                    segment.dutyCycle(FRAME_RATE / 1000.0);
+                    george.catchPoint(segment.getBrunchPoints());
+                    george.collideWithStones(segment.getStonePoints());
                 }
                 george.dutyCycle(FRAME_RATE / 1000.0);
-                invalidate(); // Redraw the view
+                updateBrunches();
             }
+            invalidate(); // Redraw the view
             handler.postDelayed(this, FRAME_RATE); // Schedule the next frame
         }
     };
@@ -68,12 +70,16 @@ public class MyCanvas extends View {
         super(context, attrs);
 
         backgroundBitmap = BitmapFactory.decodeResource(getResources(), R.drawable.background2);
-        for (int i = 0; i < 20; i++) {
-            brunches.add(new BranchPoint(1,-10));
-        }
-        brunches.add(new BranchPoint(2 * WIDTH_METERS / 9, 2.3));
-        brunches.add(new BranchPoint(7 * WIDTH_METERS / 9, 2.3));
-        brunches.add(new BranchPoint(WIDTH_METERS / 2, 2.6));
+        stoneBitmap = BitmapFactory.decodeResource(getResources(), R.drawable.roundstone);
+        lavaBitmap = BitmapFactory.decodeResource(getResources(), R.drawable.lavastone);
+        pauseBitmap = BitmapFactory.decodeResource(getResources(), R.drawable.pause);
+        playBitmap = BitmapFactory.decodeResource(getResources(), R.drawable.play);
+        brunches.add(Segment.generateSegment(-100, 1, 1));
+        brunches.add(Segment.generateSegment(-100, 1, 2));
+        brunches.add(Segment.generateSegment(-100, 1, 3));
+        brunches.add(Segment.generateSegment(-100, 1, 4));
+        brunches.add(Segment.generateSegment(2.3, 3, -1));
+
         m_brush = new Paint();
         m_brush.setStrokeWidth(30);
         m_brush.setColor(Color.BLACK);
@@ -83,7 +89,8 @@ public class MyCanvas extends View {
         m_Textbrush.setAntiAlias(true);
         m_Textbrush.setTextAlign(Paint.Align.RIGHT);
         m_Textbrush.setTypeface(Typeface.create(Typeface.DEFAULT, Typeface.BOLD));
-
+        pausePlayArea = new Rect(getWidth() / 10, 100, getWidth() / 5, 100 + getWidth() / 10);
+        updateBrunches();
         startGameLoop();
     }
 
@@ -92,6 +99,7 @@ public class MyCanvas extends View {
         super.onSizeChanged(w, h, oldw, oldh);
         meterToPixels = getWidth() / WIDTH_METERS;
         screenTopMeters = getHeight() / meterToPixels;
+        pausePlayArea = new Rect(getWidth() / 10, 100, getWidth() / 5, 100 + getWidth() / 10);
     }
 
     @Override
@@ -102,24 +110,41 @@ public class MyCanvas extends View {
             canvas.drawBitmap(backgroundBitmap, null, destRect, null);
         }
         // Draw branch points
-        for (int i = 0; i < brunches.size(); i++) {
-            BranchPoint brunch = brunches.get(i);
-            m_brush.setColor(Color.rgb(brunch.r, brunch.g, brunch.b));
-            Path brunchPath = new Path();
-            ArrayList<Vector2D> brunchPoints = brunch.getDrawnPoints();
-            brunchPath.moveTo(getXPixels(brunchPoints.get(0).getX()), getYPixels(brunchPoints.get(0).getY()));
-            for (int j = 1; j < brunchPoints.size(); j++) {
-                Vector2D point = brunchPoints.get(j);
-                brunchPath.lineTo(getXPixels(point.getX()), getYPixels(point.getY()));
+        for (int i = 0; i < brunches.size() /*&& brunches.get(i).getBottom() < screenTopMeters*/; i++) {
+            for (BranchPoint brunch : brunches.get(i).getBrunchPoints()) {
+                m_brush.setColor(Color.rgb(brunch.r, brunch.g, brunch.b));
+                Path brunchPath = new Path();
+                ArrayList<Vector2D> baseForm = brunch.getBaseForm();
+                brunchPath.moveTo(getXPixels(baseForm.get(0).getX()), getYPixels(baseForm.get(0).getY()));
+                for (int j = 1; j < baseForm.size(); j++) {
+                    brunchPath.lineTo(getXPixels(baseForm.get(j).getX()), getYPixels(baseForm.get(j).getY()));
+                }
+                ArrayList<Vector2D> firstCurve = brunch.getFirstCurve();
+                brunchPath.quadTo(
+                        getXPixels(firstCurve.get(0).getX()),
+                        getYPixels(firstCurve.get(0).getY()),
+                        getXPixels(firstCurve.get(1).getX()),
+                        getYPixels(firstCurve.get(1).getY()));
+                ArrayList<Vector2D> secondCurve = brunch.getSecondCurve();
+                brunchPath.lineTo(
+                        getXPixels(secondCurve.get(0).getX()),
+                        getYPixels(secondCurve.get(0).getY()));
+
+                brunchPath.quadTo(
+                        getXPixels(secondCurve.get(1).getX()),
+                        getYPixels(secondCurve.get(1).getY()),
+                        getXPixels(secondCurve.get(2).getX()),
+                        getYPixels(secondCurve.get(2).getY()));
+                brunchPath.lineTo(
+                        getXPixels(secondCurve.get(3).getX()),
+                        getYPixels(secondCurve.get(3).getY()));
+                brunchPath.close();
+                canvas.drawPath(brunchPath, m_brush);
             }
-            brunchPath.close();
-            canvas.drawPath(brunchPath, m_brush);
         }
         m_brush.setColor(Color.rgb(41, 29, 5));
         double[] armPoints = george.findTangents();
         if (armPoints.length == 4) {
-//            Log.d("MyCanvas", "arms x1 = "+ armPoints[0].getX()+ " y1 = "+armPoints[0].getY()+" x2 = "+armPoints[2].getX()+" y2 = "+armPoints[1].getY());
-//            canvas.drawLine(getXPixels(gyeorge.getX()), getYPixels(george.getY()), getXPixels(george.getCurrentPoint().getX()), getYPixels(george.getCurrentPoint().getY()), m_brush);
             canvas.drawLine(
                     getXPixels(armPoints[0]),
                     getYPixels(armPoints[1]),
@@ -134,13 +159,19 @@ public class MyCanvas extends View {
                     m_brush);
         }
 
-        for (int i = 0; i < brunches.size(); i++) {
-            BranchPoint brunch = brunches.get(i);
-            if (!brunch.isCollapsed()) {
-                m_brush.setColor(Color.rgb(94, 41, 158));
-                canvas.drawCircle(getXPixels(brunch.getX()), getYPixels(brunch.getY()), (int) (FLOWER_OUTER_RADIUS * meterToPixels), m_brush);
-                m_brush.setColor(Color.rgb(230, 247, 42));
-                canvas.drawCircle(getXPixels(brunch.getX()), getYPixels(brunch.getY()), (int) (FLOWER_INNER_RADIUS * meterToPixels), m_brush);
+        for (int i = 0; i < brunches.size() && brunches.get(i).getBottom() < screenTopMeters; i++) {
+            for (BranchPoint brunch : brunches.get(i).getBrunchPoints()) {
+                if (!brunch.isCollapsed()) {
+                    m_brush.setColor(Color.rgb(94, 41, 158));
+                    canvas.drawCircle(getXPixels(brunch.getX()), getYPixels(brunch.getY()), (int) (FLOWER_OUTER_RADIUS * meterToPixels), m_brush);
+                    m_brush.setColor(Color.rgb(230, 247, 42));
+                    canvas.drawCircle(getXPixels(brunch.getX()), getYPixels(brunch.getY()), (int) (FLOWER_INNER_RADIUS * meterToPixels), m_brush);
+                }
+            }
+        }
+        for (int i = 0; i < brunches.size() && brunches.get(i).getBottom() < screenTopMeters; i++) {
+            for (Stone stone : brunches.get(i).getStonePoints()) {
+                drawStone(stone, canvas);
             }
         }
         m_brush.setColor(Color.rgb(41, 29, 5));
@@ -197,7 +228,15 @@ public class MyCanvas extends View {
         canvas.restore();
         canvas.drawText("now: " + (int) george.getY(), getWidth() - 100, 100, m_Textbrush);
         canvas.drawText("max: " + maxHeight, getWidth() - 100, 200, m_Textbrush);
-
+        if (pause) {
+            if (playBitmap != null) {
+                canvas.drawBitmap(playBitmap, null, pausePlayArea, null);
+            }
+        } else {
+            if (pauseBitmap != null) {
+                canvas.drawBitmap(pauseBitmap, null, pausePlayArea, null);
+            }
+        }
     }
 
 
@@ -231,13 +270,17 @@ public class MyCanvas extends View {
         double y = getYMeters(event.getY());
         switch (event.getAction()) {
             case MotionEvent.ACTION_DOWN:
-                george.drag(x, y);
+                if (!pause) george.drag(x, y);
+                if (pausePlayArea.contains((int) event.getX(), (int) event.getY())) {
+                    pause = !pause; // Toggle the pause state
+                    return true;    // Consume the event
+                }
                 break;
             case MotionEvent.ACTION_MOVE:
-                if (george.isOnDrag()) george.setPosition(x, y);
+                if (george.isOnDrag() && !pause) george.setPosition(x, y);
                 break;
             case MotionEvent.ACTION_UP:
-                if(george.isOnDrag()) george.jump();
+                if (george.isOnDrag() && !pause) george.jump();
                 break;
 
         }
@@ -245,20 +288,31 @@ public class MyCanvas extends View {
     }
 
     private void updateBrunches() {
-        while (brunches.get(0).getY() + getHeight() / meterToPixels < screenTopMeters - 3) {
+        while (brunches.get(0).getTop() + getHeight() / meterToPixels < screenTopMeters - 3) {
+//            Log.d("seg", "rm id = "+brunches.get(0).getId());
             brunches.remove(0);
             Random r = new Random();
-            BranchPoint source = brunches.get(brunches.size() - 1);
+            final double bottom = brunches.get(brunches.size() - 1).getTop();
+            final double margin = 3;
+            final int lastID = brunches.get(brunches.size() - 1).getId();
+            int segmentID = lastID;
+            while (Segment.areNumbersValid(lastID, segmentID)) segmentID = r.nextInt(20);
+            brunches.add(Segment.generateSegment(bottom, margin, segmentID));
+//            Log.d("seg", "new id = "+segmentID);
+        }
+    }
 
-            double x = (r.nextInt(38) / 10.0) + 0.6;
-            double y = (r.nextInt(40) / 10.0) + 2 + source.getY();
-            if (r.nextInt(6) != 0) brunches.add(new BranchPoint(x, y));
-            else {
-                double x2 = (r.nextInt(38) / 10.0) + 0.6;
-                double y2 = (r.nextInt(35) / 10.0) + 1.5 + y;
-                brunches.add(new VinePoint(x, y, x2, y2));
-
-            }
+    private void drawStone(Stone stone, Canvas canvas) {
+        Vector2D stonePoint = stone.position;
+        Bitmap map = stone.type == Stone.Type.REGULAR_STONE? stoneBitmap : lavaBitmap;
+        if (map != null) {
+            Rect destRect = new Rect(
+                    getXPixels(stonePoint.getX() - STONE_RADIUS),
+                    getYPixels(stonePoint.getY() + STONE_RADIUS),
+                    getXPixels(stonePoint.getX() + STONE_RADIUS),
+                    getYPixels(stonePoint.getY() - STONE_RADIUS)
+            );
+            canvas.drawBitmap(map, null, destRect, null);
         }
     }
 }

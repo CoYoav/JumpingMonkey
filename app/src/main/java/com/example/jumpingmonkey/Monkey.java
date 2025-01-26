@@ -21,7 +21,7 @@ public class Monkey {
         state = State.FALL;
     }
 
-    public boolean hasBrunch(){
+    public boolean hasBrunch() {
         return this.currentPoint != null;
     }
 
@@ -29,7 +29,7 @@ public class Monkey {
         Vector2D sigmaForce = new Vector2D(0, 0);
 
         // Gravity force
-        Vector2D gravity = new Vector2D(0, -12 * mass * (state.equals(State.CATCH)? 5: 1));
+        Vector2D gravity = new Vector2D(0, -24.33 * mass * (state.equals(State.CATCH) ? 5 : 1));
         sigmaForce = sigmaForce.plus(gravity);
 
         // Spring force from the current branch point
@@ -39,7 +39,7 @@ public class Monkey {
         }
 
         // Air resistance (drag force)
-        double dragCoeff = state.equals(State.CATCH)? DRAG_COEFFICIENT: 0;
+        double dragCoeff = state.equals(State.CATCH) ? DRAG_COEFFICIENT : 0;
         Vector2D drag = velocity.mul(-dragCoeff * velocity.getDistance());
         sigmaForce = sigmaForce.plus(drag);
 
@@ -85,13 +85,16 @@ public class Monkey {
         return currentPoint;
     }
 
-    public void catchPoint(BranchPoint point) {
+    public void catchPoint(BranchPoint[] points) {
         if (this.currentPoint != null) return;
-        if (!point.isAvailable()) return;
-        if (Math.sqrt(Math.pow(point.getX() - this.x, 2) + Math.pow(point.getY() - this.y, 2)) < this.radius + FLOWER_OUTER_RADIUS) {
-            this.currentPoint = point;
-            this.state = State.CATCH;
-            point.hold();
+        for (BranchPoint point : points) {
+            if (!point.isAvailable()) continue;
+            if (Math.sqrt(Math.pow(point.getX() - this.x, 2) + Math.pow(point.getY() - this.y, 2)) < this.radius + FLOWER_OUTER_RADIUS) {
+                this.currentPoint = point;
+                this.state = State.CATCH;
+                point.hold();
+                return;
+            }
         }
     }
 
@@ -152,11 +155,39 @@ public class Monkey {
     public boolean isOnJump() {
         return this.state.equals(State.JUMP);
     }
+    public void collideWithStones(Stone[] stones){
+        for(Stone stone : stones) collide(stone.position, Constants.STONE_RADIUS);
+    }
+    public void collide(Vector2D center, double r) {
+        // Calculate the vector from the circle center to the monkey's position
+        Vector2D centerToMonkey = new Vector2D(this.x - center.getX(), this.y - center.getY());
+        double distance = centerToMonkey.getDistance();
+
+        // Check if there is a collision
+        if (distance < this.radius + r) {
+            // Ensure the monkey is outside the circle by pushing it out
+            Vector2D correctedPosition = centerToMonkey.withDistance(this.radius + r);
+            this.x = center.getX() + correctedPosition.getX();
+            this.y = center.getY() + correctedPosition.getY();
+
+            // Reflect the velocity to point outwards
+            Vector2D collisionNormal = centerToMonkey.withDistance(1.0); // Unit vector
+            double velocityProjection = this.velocity.getX() * collisionNormal.getX() + this.velocity.getY() * collisionNormal.getY();
+
+            if (velocityProjection < 0) {
+                // Reverse only the component of velocity pointing towards the circle
+                Vector2D velocityInCollisionDirection = collisionNormal.mul(velocityProjection);
+                this.velocity = this.velocity.plus(velocityInCollisionDirection.mul(-2));
+            }
+        }
+    }
+
 
     public boolean isOnDrag() {
         return this.state.equals(State.HOLD);
     }
-    public enum State{
+
+    public enum State {
         HOLD,
         FALL,
         CATCH,

@@ -27,12 +27,12 @@ public class Vector2D {
         return new Vector2D(magnitude * Math.cos(direction), magnitude * Math.sin(direction));
     }
 
-    public double getX() {
-        return m_x;
+    public float getX() {
+        return (float) m_x;
     }
 
-    public double getY() {
-        return m_y;
+    public float getY() {
+        return (float) m_y;
     }
 
     public double getDistance() {

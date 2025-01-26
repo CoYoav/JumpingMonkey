@@ -2,6 +2,8 @@ package com.example.jumpingmonkey;
 
 import static com.example.jumpingmonkey.Constants.WIDTH_METERS;
 
+import android.graphics.Path;
+
 import java.util.ArrayList;
 import java.util.Random;
 
@@ -14,26 +16,30 @@ public class BranchPoint {
     public final Vector2D lowerRootPoint;
     protected int r, g, b;
     private double timeSinceRelease = 2;
+    protected double controllOffset;
 
     public BranchPoint(double x, double y) {
         Random random = new Random();
         this.mainPoint = new Vector2D(x, y);
         this.onHold = false;
         this.collapsed = false;
-        double angle = random.nextInt(13);
+        double angle = random.nextInt(26);
         if (x < WIDTH_METERS / 2) {
+            angle -= 13;
             angle = 180 - angle;
         }
-        double thickness = (random.nextInt(40) + 30) / 100.0;
+        double thickness = (4) * (2.5 - Math.abs(x - 2.5)) / 10.0;
 
-        double fullBranchX = angle > 90 ? -this.mainPoint.getX() : WIDTH_METERS - this.mainPoint.getX();
+        double fullBranchX = x < WIDTH_METERS / 2 ? -this.mainPoint.getX() : WIDTH_METERS - this.mainPoint.getX();
         double fullBranchY = Math.tan(Math.PI * angle / 180) * fullBranchX;
-        this.rootPoint = new Vector2D(this.mainPoint.getX() + fullBranchX, fullBranchY + this.mainPoint.getY());
-        this.lowerRootPoint = new Vector2D(this.mainPoint.getX() + fullBranchX, this.mainPoint.getY() + fullBranchY - thickness);
+        this.rootPoint = new Vector2D(this.mainPoint.getX() + fullBranchX, fullBranchY + this.mainPoint.getY() + thickness / 2);
+        this.lowerRootPoint = new Vector2D(this.mainPoint.getX() + fullBranchX, this.mainPoint.getY() + fullBranchY - thickness / 2);
 
         r = 117 + random.nextInt(40) - 20;
         g = 57 + random.nextInt(40) - 20;
         b = 33 + random.nextInt(40) - 20;
+        controllOffset = random.nextDouble() / 6;// * Math.signum(Math.sin(Math.PI * angle / 180));
+        if (random.nextBoolean()) controllOffset *= -1;
     }
 
     public void hold() {
@@ -87,6 +93,63 @@ public class BranchPoint {
 
     public Vector2D getDisplacement(double x, double y) {
         return new Vector2D(x - this.mainPoint.getX(), y - this.mainPoint.getY());
+    }
+
+    public ArrayList<Vector2D> getBaseForm() {
+        ArrayList<Vector2D> drawnPoints = new ArrayList<>();
+        drawnPoints.add(this.rootPoint);
+        Vector2D upperFlowerPoint = getUpperFlowerPoint();
+        Vector2D lowerFlowerPoint = getLowerFlowerPoint();
+        Vector2D upperControlPoint = new Vector2D((upperFlowerPoint.getX() + rootPoint.getX()) / 2, upperFlowerPoint.getY() + controllOffset);
+        Vector2D lowerControlPoint = new Vector2D((lowerFlowerPoint.getX() + lowerRootPoint.getX()) / 2, lowerFlowerPoint.getY() + controllOffset);
+        Vector2D upperTrapazoidPoint = Vector2D.lerp(rootPoint, upperControlPoint, 0.4);
+        Vector2D lowerTrapazoidPoint = Vector2D.lerp(lowerRootPoint, lowerControlPoint, 0.4);
+        if (this.onHold) {
+            drawnPoints.add(Vector2D.lerp(this.rootPoint, upperTrapazoidPoint, 0.6));
+            double t = timeToCollapse / collapseTime;
+            Vector2D upperCenter, lowerCenter, breakPoint;
+            upperCenter = Vector2D.lerp(rootPoint, upperTrapazoidPoint, 0.6);
+            lowerCenter = Vector2D.lerp(lowerRootPoint, lowerTrapazoidPoint, 0.6);
+            breakPoint = Vector2D.lerp(lowerCenter, upperCenter, t);
+            drawnPoints.add(breakPoint);
+            upperCenter = upperTrapazoidPoint;
+            lowerCenter = lowerTrapazoidPoint;
+            breakPoint = Vector2D.lerp(lowerCenter, upperCenter, t);
+            drawnPoints.add(breakPoint);
+            drawnPoints.add(upperTrapazoidPoint);
+        } else if (this.collapsed){
+            double t = 0.6 + ((2 - this.timeToRegeneration) / 2) * 0.6;
+            drawnPoints.add(Vector2D.lerp(this.rootPoint, upperFlowerPoint, t));
+            drawnPoints.add(Vector2D.lerp(this.lowerRootPoint, lowerFlowerPoint, t));
+        }
+        return drawnPoints;
+    }
+
+    public ArrayList<Vector2D> getFirstCurve() {
+        ArrayList<Vector2D> drawnPoints = new ArrayList<>();
+        Vector2D upperFlowerPoint = getUpperFlowerPoint();
+        Vector2D lowerFlowerPoint = getLowerFlowerPoint();
+        Vector2D upperControlPoint = new Vector2D((upperFlowerPoint.getX() + rootPoint.getX()) / 2, upperFlowerPoint.getY() + controllOffset);
+        Vector2D lowerControlPoint = new Vector2D((lowerFlowerPoint.getX() + lowerRootPoint.getX()) / 2, lowerFlowerPoint.getY() + controllOffset);
+        Vector2D upperTrapazoidPoint = Vector2D.lerp(rootPoint, upperControlPoint, 0.4);
+        Vector2D lowerTrapazoidPoint = Vector2D.lerp(lowerRootPoint, lowerControlPoint, 0.4);
+        drawnPoints.add(upperControlPoint);
+        drawnPoints.add(upperFlowerPoint);
+        return drawnPoints;
+    }
+
+    public ArrayList<Vector2D> getSecondCurve() {
+        ArrayList<Vector2D> drawnPoints = new ArrayList<>();
+        Vector2D upperFlowerPoint = getUpperFlowerPoint();
+        Vector2D lowerFlowerPoint = getLowerFlowerPoint();
+        Vector2D upperControlPoint = new Vector2D((upperFlowerPoint.getX() + rootPoint.getX()) / 2, upperFlowerPoint.getY() + controllOffset);
+        Vector2D lowerControlPoint = new Vector2D((lowerFlowerPoint.getX() + lowerRootPoint.getX()) / 2, lowerFlowerPoint.getY() + controllOffset);
+        Vector2D lowerTrapazoidPoint = Vector2D.lerp(lowerRootPoint, lowerControlPoint, 0.4);
+        drawnPoints.add(lowerFlowerPoint);
+        drawnPoints.add(lowerControlPoint);
+        drawnPoints.add(lowerTrapazoidPoint);
+        drawnPoints.add(lowerRootPoint);
+        return drawnPoints;
     }
 
     public ArrayList<Vector2D> getDrawnPoints() {
@@ -144,5 +207,8 @@ public class BranchPoint {
 
     protected void setMainPoint(Vector2D mainPoint) {
         this.mainPoint = mainPoint;
+    }
+    public double getTop(){
+        return this.mainPoint.getY();
     }
 }
