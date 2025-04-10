@@ -13,11 +13,16 @@ import androidx.core.view.WindowInsetsCompat;
 public class MainActivity extends AppCompatActivity {
 
     private MyCanvas myCanvas;  // Reference to the MyCanvas class
+    private StateManager stateManager = StateManager.getInstance();
+    private ScoreDatabase db;
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
         EdgeToEdge.enable(this);
+
+        db = ScoreDatabase.getInstance(this);
+
         setContentView(R.layout.activity_main);
 
         // Get the MyCanvas view and assign it to the variable
@@ -41,6 +46,7 @@ public class MainActivity extends AppCompatActivity {
             public void run() {
                 // Check if the game is over using the isGameOver() method from MyCanvas
                 if (myCanvas.isGameOver()) {
+                    db.updateScore(stateManager.getPlayerName(), myCanvas.getScore());
                     // If game over, delay for 1.5 seconds and then transition to MenuActivity
                     handler.postDelayed(() -> {
                         Intent intent = new Intent(MainActivity.this, MenuActivity.class);

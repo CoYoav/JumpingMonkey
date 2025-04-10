@@ -275,7 +275,6 @@ public class MyCanvas extends View {
 
     private void updateBrunches() {
         while (brunches.get(0).getTop() + getHeight() / meterToPixels < screenTopMeters - 3) {
-//            Log.d("seg", "rm id = "+brunches.get(0).getId());
             brunches.remove(0);
             Random r = new Random();
             final double bottom = brunches.get(brunches.size() - 1).getTop();
@@ -284,7 +283,6 @@ public class MyCanvas extends View {
             int segmentID = lastID;
             while (Segment.areNumbersValid(lastID, segmentID)) segmentID = r.nextInt(20);
             brunches.add(Segment.generateSegment(bottom, margin, segmentID));
-//            Log.d("seg", "new id = "+segmentID);
         }
     }
 
@@ -326,9 +324,11 @@ public class MyCanvas extends View {
         }
         invalidate(); // Redraw the view
         handler.postDelayed(r, FRAME_RATE); // Schedule the next frame
-        Log.d("bot h", "" + brunches.get(0).getBottom());
     }
     public boolean isGameOver(){
         return gameOver;
+    }
+    public int getScore(){
+        return maxHeight;
     }
 }

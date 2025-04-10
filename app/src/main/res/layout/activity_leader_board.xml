@@ -1,0 +1,101 @@
+<?xml version="1.0" encoding="utf-8"?>
+<androidx.constraintlayout.widget.ConstraintLayout
+    xmlns:android="http://schemas.android.com/apk/res/android"
+    xmlns:app="http://schemas.android.com/apk/res-auto"
+    xmlns:tools="http://schemas.android.com/tools"
+    android:id="@+id/main"
+    android:layout_width="match_parent"
+    android:layout_height="match_parent"
+    android:background="#E0E0E0"
+    tools:context=".LeaderBoard">
+
+    <!-- Title -->
+    <TextView
+        android:id="@+id/title"
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        android:text="Jumping Monkey"
+        android:textSize="28sp"
+        android:textStyle="bold"
+        android:textColor="#000000"
+        app:layout_constraintTop_toTopOf="parent"
+        app:layout_constraintStart_toStartOf="parent"
+        app:layout_constraintEnd_toEndOf="parent"
+        android:layout_marginTop="32dp" />
+
+    <!-- Leaderboard Table -->
+    <TableLayout
+        android:id="@+id/table"
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        android:background="#3D3D3D"
+        app:layout_constraintTop_toBottomOf="@+id/title"
+        app:layout_constraintStart_toStartOf="parent"
+        app:layout_constraintEnd_toEndOf="parent"
+        android:layout_marginTop="32dp"
+        android:padding="4dp">
+
+        <!-- Table Header -->
+        <TableRow>
+            <TextView
+                android:text="Num."
+                android:layout_margin="4dp"
+                android:textColor="#FFFFFF"/>
+            <TextView
+                android:text="name"
+                android:layout_margin="4dp"
+                android:textColor="#FFFFFF"/>
+            <TextView
+                android:text="score"
+                android:layout_margin="4dp"
+                android:textColor="#FFFFFF"/>
+        </TableRow>
+
+        <!-- Table Rows -->
+        <TableRow>
+            <TextView android:text="1." android:textColor="#FFFFFF" android:layout_margin="4dp"/>
+            <TextView android:text="example" android:textColor="#FFFFFF" android:layout_margin="4dp"/>
+            <TextView android:text="example" android:textColor="#FFFFFF" android:layout_margin="4dp"/>
+        </TableRow>
+
+        <TableRow>
+            <TextView android:text="2." android:textColor="#FFFFFF" android:layout_margin="4dp"/>
+            <TextView android:text="example" android:textColor="#FFFFFF" android:layout_margin="4dp"/>
+            <TextView android:text="example" android:textColor="#FFFFFF" android:layout_margin="4dp"/>
+        </TableRow>
+
+        <TableRow>
+            <TextView android:text="3." android:textColor="#FFFFFF" android:layout_margin="4dp"/>
+            <TextView android:text="example" android:textColor="#FFFFFF" android:layout_margin="4dp"/>
+            <TextView android:text="example" android:textColor="#FFFFFF" android:layout_margin="4dp"/>
+        </TableRow>
+
+        <TableRow>
+            <TextView android:text="4." android:textColor="#FFFFFF" android:layout_margin="4dp"/>
+            <TextView android:text="example" android:textColor="#FFFFFF" android:layout_margin="4dp"/>
+            <TextView android:text="example" android:textColor="#FFFFFF" android:layout_margin="4dp"/>
+        </TableRow>
+
+        <TableRow>
+            <TextView android:text="5." android:textColor="#FFFFFF" android:layout_margin="4dp"/>
+            <TextView android:text="example" android:textColor="#FFFFFF" android:layout_margin="4dp"/>
+            <TextView android:text="example" android:textColor="#FFFFFF" android:layout_margin="4dp"/>
+        </TableRow>
+
+    </TableLayout>
+
+    <!-- Start Button -->
+    <Button
+        android:id="@+id/start_button"
+        android:layout_width="200dp"
+        android:layout_height="60dp"
+        android:layout_marginTop="40dp"
+        android:background="#A0A0A0"
+        android:text="start playing"
+        android:textAllCaps="false"
+        android:textColor="#000000"
+        app:layout_constraintBottom_toBottomOf="parent"
+        app:layout_constraintEnd_toEndOf="parent"
+        app:layout_constraintStart_toStartOf="parent"
+        app:layout_constraintTop_toBottomOf="@id/table" />
+</androidx.constraintlayout.widget.ConstraintLayout>

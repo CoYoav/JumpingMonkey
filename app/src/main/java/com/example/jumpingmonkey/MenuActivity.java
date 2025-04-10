@@ -2,6 +2,7 @@ package com.example.jumpingmonkey;
 
 import android.content.Intent;
 import android.os.Bundle;
+import android.util.Log;
 import android.view.View;
 import android.widget.Button;
 
@@ -25,12 +26,20 @@ public class MenuActivity extends AppCompatActivity {
             return insets;
         });
 
-        // Set up the start button to navigate to MainActivity when clicked
+        // Start playing button
         Button startButton = findViewById(R.id.startButton);
         startButton.setOnClickListener(v -> {
             Intent intent = new Intent(MenuActivity.this, MainActivity.class);
             startActivity(intent);
-            finish(); // Close MenuActivity so it doesn't stay in the back stack
+            finish();
+        });
+
+        // Leaderboard button
+        Button leaderBoardButton = findViewById(R.id.leaderBoardButton);
+        leaderBoardButton.setOnClickListener(v -> {
+            Intent intent = new Intent(MenuActivity.this, LeaderBoard.class);
+            startActivity(intent);
         });
     }
+
 }
