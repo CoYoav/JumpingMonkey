@@ -7,6 +7,7 @@
     tools:context=".MainActivity">
 
     <com.example.jumpingmonkey.MyCanvas
+        android:id="@+id/myCanvas"
         android:layout_width="match_parent"
         android:layout_height="match_parent" />
 

@@ -12,6 +12,7 @@ public class Monkey {
     private BranchPoint currentPoint;
     private double radius = 0.45;
     private State state;
+    private boolean isAlive = true;
 
     public Monkey(BranchPoint startPoint) {
         this.x = 2.5;
@@ -155,10 +156,18 @@ public class Monkey {
     public boolean isOnJump() {
         return this.state.equals(State.JUMP);
     }
-    public void collideWithStones(Stone[] stones){
-        for(Stone stone : stones) collide(stone.position, Constants.STONE_RADIUS);
+
+    public void collideWithStones(Stone[] stones) {
+        for (Stone stone : stones) {
+            collide(stone);
+        }
     }
-    public void collide(Vector2D center, double r) {
+
+    public void collide(Stone stone) {
+
+        Vector2D center = stone.position;
+        double r = Constants.STONE_RADIUS;
+
         // Calculate the vector from the circle center to the monkey's position
         Vector2D centerToMonkey = new Vector2D(this.x - center.getX(), this.y - center.getY());
         double distance = centerToMonkey.getDistance();
@@ -170,18 +179,29 @@ public class Monkey {
             this.x = center.getX() + correctedPosition.getX();
             this.y = center.getY() + correctedPosition.getY();
 
-            // Reflect the velocity to point outwards
-            Vector2D collisionNormal = centerToMonkey.withDistance(1.0); // Unit vector
-            double velocityProjection = this.velocity.getX() * collisionNormal.getX() + this.velocity.getY() * collisionNormal.getY();
+            if (stone.type.equals(Stone.Type.LAVA_STONE)) this.setAlive(false);
+            else {
+                // Reflect the velocity to point outwards
+                Vector2D collisionNormal = centerToMonkey.withDistance(1.0); // Unit vector
+                double velocityProjection = this.velocity.getX() * collisionNormal.getX() + this.velocity.getY() * collisionNormal.getY();
 
-            if (velocityProjection < 0) {
-                // Reverse only the component of velocity pointing towards the circle
-                Vector2D velocityInCollisionDirection = collisionNormal.mul(velocityProjection);
-                this.velocity = this.velocity.plus(velocityInCollisionDirection.mul(-2));
+                if (velocityProjection < 0) {
+                    // Reverse only the component of velocity pointing towards the circle
+                    Vector2D velocityInCollisionDirection = collisionNormal.mul(velocityProjection);
+                    this.velocity = this.velocity.plus(velocityInCollisionDirection.mul(-2));
+                }
             }
         }
     }
 
+
+    public boolean isAlive() {
+        return isAlive;
+    }
+
+    public void setAlive(boolean alive) {
+        isAlive = alive;
+    }
 
     public boolean isOnDrag() {
         return this.state.equals(State.HOLD);

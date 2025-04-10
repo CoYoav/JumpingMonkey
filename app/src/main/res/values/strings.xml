@@ -1,3 +1,6 @@
 <resources>
     <string name="app_name">JumpingMonkey</string>
+    <string name="start_playig">start playig</string>
+    <string name="enter_your_name_here">enter your name here</string>
+    <string name="jumping_monkey">Jumping Monkey</string>
 </resources>

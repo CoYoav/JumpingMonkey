@@ -16,6 +16,7 @@ import android.graphics.Path;
 import android.graphics.Rect;
 import android.graphics.Typeface;
 import android.util.AttributeSet;
+import android.util.Log;
 import android.view.MotionEvent;
 import android.view.View;
 import android.os.Handler;
@@ -40,37 +41,14 @@ public class MyCanvas extends View {
     private boolean gameOver = false;
     private boolean pause = false;
     private Rect pausePlayArea;
-    private final Runnable gameLoop = new Runnable() {
-        @Override
-        public void run() {
-            if (!gameOver && !pause) {
-                maxHeight = Math.max(maxHeight, (int) george.getY());
-                if (george.hasBrunch()) {
-                    double error = george.getCurrentPoint().getY() + 0.7 * getHeight() / meterToPixels - screenTopMeters;
-                    screenTopMeters += SCROLL_KP * error;
-                } else {
-                    double error = george.getY() + 0.7 * getHeight() / meterToPixels - screenTopMeters;
-                    screenTopMeters += SCROLL_KP * error;
-                }
-                for (int i = 0; i < brunches.size(); i++) {
-                    Segment segment = brunches.get(i);
-                    segment.dutyCycle(FRAME_RATE / 1000.0);
-                    george.catchPoint(segment.getBrunchPoints());
-                    george.collideWithStones(segment.getStonePoints());
-                }
-                george.dutyCycle(FRAME_RATE / 1000.0);
-                updateBrunches();
-            }
-            invalidate(); // Redraw the view
-            handler.postDelayed(this, FRAME_RATE); // Schedule the next frame
-        }
-    };
+    private Paint pausePlayPaint;
+    private final Runnable gameLoop;
 
     public MyCanvas(Context context, AttributeSet attrs) {
         super(context, attrs);
 
-        backgroundBitmap = BitmapFactory.decodeResource(getResources(), R.drawable.background2);
-        stoneBitmap = BitmapFactory.decodeResource(getResources(), R.drawable.roundstone);
+        backgroundBitmap = BitmapFactory.decodeResource(getResources(), R.drawable.background);
+        stoneBitmap = BitmapFactory.decodeResource(getResources(), R.drawable.stone);
         lavaBitmap = BitmapFactory.decodeResource(getResources(), R.drawable.lavastone);
         pauseBitmap = BitmapFactory.decodeResource(getResources(), R.drawable.pause);
         playBitmap = BitmapFactory.decodeResource(getResources(), R.drawable.play);
@@ -80,6 +58,8 @@ public class MyCanvas extends View {
         brunches.add(Segment.generateSegment(-100, 1, 4));
         brunches.add(Segment.generateSegment(2.3, 3, -1));
 
+        pausePlayPaint = new Paint();
+        pausePlayPaint.setAlpha(200);
         m_brush = new Paint();
         m_brush.setStrokeWidth(30);
         m_brush.setColor(Color.BLACK);
@@ -91,6 +71,12 @@ public class MyCanvas extends View {
         m_Textbrush.setTypeface(Typeface.create(Typeface.DEFAULT, Typeface.BOLD));
         pausePlayArea = new Rect(getWidth() / 10, 100, getWidth() / 5, 100 + getWidth() / 10);
         updateBrunches();
+        gameLoop = new Runnable() {
+            @Override
+            public void run() {
+                gameIteration(this);
+            }
+        };
         startGameLoop();
     }
 
@@ -230,11 +216,11 @@ public class MyCanvas extends View {
         canvas.drawText("max: " + maxHeight, getWidth() - 100, 200, m_Textbrush);
         if (pause) {
             if (playBitmap != null) {
-                canvas.drawBitmap(playBitmap, null, pausePlayArea, null);
+                canvas.drawBitmap(playBitmap, null, pausePlayArea, pausePlayPaint);
             }
         } else {
             if (pauseBitmap != null) {
-                canvas.drawBitmap(pauseBitmap, null, pausePlayArea, null);
+                canvas.drawBitmap(pauseBitmap, null, pausePlayArea, pausePlayPaint);
             }
         }
     }
@@ -304,7 +290,7 @@ public class MyCanvas extends View {
 
     private void drawStone(Stone stone, Canvas canvas) {
         Vector2D stonePoint = stone.position;
-        Bitmap map = stone.type == Stone.Type.REGULAR_STONE? stoneBitmap : lavaBitmap;
+        Bitmap map = stone.type == Stone.Type.REGULAR_STONE ? stoneBitmap : lavaBitmap;
         if (map != null) {
             Rect destRect = new Rect(
                     getXPixels(stonePoint.getX() - STONE_RADIUS),
@@ -314,5 +300,35 @@ public class MyCanvas extends View {
             );
             canvas.drawBitmap(map, null, destRect, null);
         }
+    }
+
+    public void gameIteration(Runnable r) {
+        if (!gameOver && !pause) {
+            maxHeight = Math.max(maxHeight, (int) george.getY());
+            if (george.hasBrunch()) {
+                double error = george.getCurrentPoint().getY() + 0.7 * getHeight() / meterToPixels - screenTopMeters;
+                screenTopMeters += SCROLL_KP * error;
+            } else {
+                double error = george.getY() + 0.7 * getHeight() / meterToPixels - screenTopMeters;
+                screenTopMeters += SCROLL_KP * error;
+            }
+            for (int i = 0; i < brunches.size(); i++) {
+                Segment segment = brunches.get(i);
+                segment.dutyCycle(FRAME_RATE / 1000.0);
+                george.catchPoint(segment.getBrunchPoints());
+                george.collideWithStones(segment.getStonePoints());
+            }
+            george.dutyCycle(FRAME_RATE / 1000.0);
+            if (george.getY() + getHeight() / meterToPixels < screenTopMeters)
+                george.setAlive(false);
+            updateBrunches();
+            if (!george.isAlive()) gameOver = true;
+        }
+        invalidate(); // Redraw the view
+        handler.postDelayed(r, FRAME_RATE); // Schedule the next frame
+        Log.d("bot h", "" + brunches.get(0).getBottom());
+    }
+    public boolean isGameOver(){
+        return gameOver;
     }
 }
