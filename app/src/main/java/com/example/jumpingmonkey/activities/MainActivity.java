@@ -15,58 +15,64 @@ import com.example.jumpingmonkey.animation.MyCanvas;
 import com.example.jumpingmonkey.util.ScoreDatabase;
 import com.example.jumpingmonkey.util.StateManager;
 
+/**
+ * MainActivity is the core gameplay screen. It initializes the canvas view,
+ * listens for game over state, and handles transition to the Menu screen.
+ */
 public class MainActivity extends AppCompatActivity {
 
-    private MyCanvas myCanvas;  // Reference to the MyCanvas class
-    private StateManager stateManager = StateManager.getInstance();
+    private MyCanvas myCanvas;
+    private final StateManager stateManager = StateManager.getInstance();
     private ScoreDatabase db;
 
+    /**
+     * Initializes the game view and starts the game-over check loop.
+     */
     @Override
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
         EdgeToEdge.enable(this);
-
-        db = ScoreDatabase.getInstance(this);
-
         setContentView(R.layout.activity_main);
 
-        // Get the MyCanvas view and assign it to the variable
+        db = ScoreDatabase.getInstance(this);
         myCanvas = findViewById(R.id.myCanvas);
 
+        // Apply padding to avoid system bars overlapping
         ViewCompat.setOnApplyWindowInsetsListener(findViewById(R.id.main), (v, insets) -> {
             Insets systemBars = insets.getInsets(WindowInsetsCompat.Type.systemBars());
             v.setPadding(systemBars.left, systemBars.top, systemBars.right, systemBars.bottom);
             return insets;
         });
 
-        // Continuously check if the game is over
+        // Start checking for game-over condition
         checkGameOver();
     }
 
+    /**
+     * Periodically checks if the game has ended.
+     * If so, updates the score, stores it in the database, and transitions to the MenuActivity.
+     */
     private void checkGameOver() {
-        // Create a Handler to check for game over state periodically
-        final Handler handler = new Handler();
+        Handler handler = new Handler();
         handler.postDelayed(new Runnable() {
             @Override
             public void run() {
-                // Check if the game is over using the isGameOver() method from MyCanvas
                 if (myCanvas.isGameOver()) {
-                    db.updateScore(stateManager.getPlayerName(), myCanvas.getScore());
-                    stateManager.setLastScore(myCanvas.getScore());
-                    // If game over, delay for 1.5 seconds and then transition to MenuActivity
+                    int finalScore = myCanvas.getScore();
+                    db.updateScore(stateManager.getPlayerName(), finalScore);
+                    stateManager.setLastScore(finalScore);
+
+                    // Transition to MenuActivity after a short delay
                     handler.postDelayed(() -> {
                         Intent intent = new Intent(MainActivity.this, MenuActivity.class);
                         startActivity(intent);
-                        finish(); // Close MainActivity so it doesn't stay in the back stack
-                    }, 500); // 1.5 seconds delay
+                        finish();
+                    }, 500); // 0.5 second delay before transitioning
                 } else {
-                    // If the game is not over, check again after a short delay
-                    handler.postDelayed(this, 500); // Check every 500 ms
+                    // Continue checking every 500ms
+                    handler.postDelayed(this, 500);
                 }
             }
-        }, 500); // Start the first check after 500 ms
+        }, 500); // Initial delay before first check
     }
-
-
-
 }

@@ -57,20 +57,21 @@ public class MenuActivity extends AppCompatActivity {
         int id = item.getItemId();
 
         if (id == R.id.exit) {
-            finish(); // Close activity
+            finish(); // Exit the app
             return true;
-        } else if (id == R.id.leaderBoard) {
-            Intent intent = new Intent(MenuActivity.this, LeaderBoardActivity.class);
-            startActivity(intent);
-            finish();
-            return true;
+        }
+
+        Intent intent = null;
+
+        if (id == R.id.leaderBoard) {
+            intent = new Intent(this, LeaderBoardActivity.class);
         } else if (id == R.id.retry) {
-            Intent intent = new Intent(MenuActivity.this, MainActivity.class);
-            startActivity(intent);
-            finish();
-            return true;
+            intent = new Intent(this, MainActivity.class);
         } else if (id == R.id.home) {
-            Intent intent = new Intent(MenuActivity.this, LoginActivity.class);
+            intent = new Intent(this, LoginActivity.class);
+        }
+
+        if (intent != null) {
             startActivity(intent);
             finish();
             return true;
@@ -78,4 +79,5 @@ public class MenuActivity extends AppCompatActivity {
 
         return super.onOptionsItemSelected(item);
     }
+
 }
