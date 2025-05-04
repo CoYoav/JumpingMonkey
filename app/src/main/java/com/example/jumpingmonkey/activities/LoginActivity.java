@@ -1,15 +1,25 @@
 package com.example.jumpingmonkey.activities;
 
+import android.annotation.SuppressLint;
+import android.app.Activity;
 import android.content.Intent;
+import android.database.Cursor;
+import android.net.Uri;
 import android.os.Bundle;
+import android.provider.ContactsContract;
 import android.speech.RecognizerIntent;
 import android.util.Log;
 import android.widget.Button;
 import android.widget.EditText;
 import android.widget.ImageButton;
+import android.widget.ImageView;
 import android.widget.Toast;
 
 import androidx.activity.EdgeToEdge;
+import androidx.activity.result.ActivityResult;
+import androidx.activity.result.ActivityResultCallback;
+import androidx.activity.result.ActivityResultLauncher;
+import androidx.activity.result.contract.ActivityResultContracts;
 import androidx.appcompat.app.AppCompatActivity;
 import androidx.core.graphics.Insets;
 import androidx.core.view.ViewCompat;
@@ -24,6 +34,12 @@ import java.util.Locale;
 public class LoginActivity extends AppCompatActivity {
     private StateManager stateManager = StateManager.getInstance();
     private static final int SPEECH_REQUEST_CODE = 1;
+    private ActivityResultLauncher<Intent> contentLauncher;
+
+    EditText nameInput;
+    Button startButton;
+    ImageButton micButton;
+    ImageButton imgContact;
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
@@ -37,11 +53,17 @@ public class LoginActivity extends AppCompatActivity {
             return insets;
         });
 
-        EditText nameInput = findViewById(R.id.nameInput);
-        Button startButton = findViewById(R.id.startButton);
-        ImageButton micButton = findViewById(R.id.micButton);
+        nameInput = findViewById(R.id.nameInput);
+        startButton = findViewById(R.id.startButton);
+        micButton = findViewById(R.id.micButton);
+        imgContact = findViewById(R.id.imgContact);
+        initcontentP();
+        imgContact.setOnClickListener(v -> {
 
-        // Start button logic
+            Intent contactPickerIntent = new Intent(Intent.ACTION_PICK);
+            contactPickerIntent.setType(ContactsContract.CommonDataKinds.Phone.CONTENT_TYPE);
+            contentLauncher.launch(contactPickerIntent);
+        });
         startButton.setOnClickListener(v -> {
             stateManager.setPlayerName(nameInput.getText().toString());
             if (!stateManager.getPlayerName().equals("")) {
@@ -79,5 +101,42 @@ public class LoginActivity extends AppCompatActivity {
                 nameInput.setText(result.get(0));
             }
         }
+    }
+
+    private void initcontentP() {
+
+        contentLauncher = registerForActivityResult(
+                new ActivityResultContracts.StartActivityForResult(),
+                new ActivityResultCallback<ActivityResult>() {
+                    @Override
+                    public void onActivityResult(ActivityResult result) {
+                        Cursor cursor = null;
+
+                        if (result.getResultCode() == Activity.RESULT_OK) {
+                            Intent intent = result.getData();
+                            try {
+                                Uri uri = intent.getData();
+
+                                cursor = getContentResolver().query(uri, null, null, null, null);
+                                cursor.moveToFirst();
+
+
+                                int phoneIndexName = cursor.getColumnIndex
+                                        (ContactsContract.CommonDataKinds.Phone.DISPLAY_NAME);
+
+
+                                String phoneName = cursor.getString(phoneIndexName);
+                                //  tvHead.setText(phoneName + " ");
+
+                                nameInput.setText(phoneName);
+
+
+                            } catch (Exception e) {
+                                e.printStackTrace();
+                            }
+                        }
+
+                    }
+                });
     }
 }

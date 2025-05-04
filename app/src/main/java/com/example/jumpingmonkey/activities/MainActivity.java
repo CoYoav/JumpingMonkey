@@ -52,6 +52,7 @@ public class MainActivity extends AppCompatActivity {
                 // Check if the game is over using the isGameOver() method from MyCanvas
                 if (myCanvas.isGameOver()) {
                     db.updateScore(stateManager.getPlayerName(), myCanvas.getScore());
+                    stateManager.setLastScore(myCanvas.getScore());
                     // If game over, delay for 1.5 seconds and then transition to MenuActivity
                     handler.postDelayed(() -> {
                         Intent intent = new Intent(MainActivity.this, MenuActivity.class);
@@ -65,4 +66,7 @@ public class MainActivity extends AppCompatActivity {
             }
         }, 500); // Start the first check after 500 ms
     }
+
+
+
 }

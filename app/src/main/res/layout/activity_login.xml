@@ -8,29 +8,47 @@
     android:background="@drawable/background"
     tools:context=".activities.LoginActivity">
 
+    <ImageButton
+        android:id="@+id/imgContact"
+        android:layout_width="48dp"
+        android:layout_height="48dp"
+        android:layout_gravity="center"
+        android:background="#FFF"
+
+        android:scaleType="fitXY"
+        android:src="@drawable/baseline_person_24"
+        app:layout_constraintBottom_toBottomOf="parent"
+        app:layout_constraintEnd_toEndOf="parent"
+        app:layout_constraintHorizontal_bias="0.5"
+        app:layout_constraintStart_toEndOf="@+id/frameLayout"
+        app:layout_constraintTop_toBottomOf="@+id/title"
+        app:layout_constraintVertical_bias="0.5"
+        app:tint="#616161"
+        tools:ignore="MissingConstraints" />
+
     <TextView
         android:id="@+id/title"
         android:layout_width="wrap_content"
         android:layout_height="wrap_content"
-        android:text="Jumping Monkey"
-        android:textSize="36sp"
-        android:textColor="#ffffff"
-        android:textStyle="bold"
         android:layout_marginTop="48dp"
         android:background="#616161"
         android:padding="16dp"
-        app:layout_constraintTop_toTopOf="parent"
+        android:text="Jumping Monkey"
+        android:textColor="#ffffff"
+        android:textSize="36sp"
+        android:textStyle="bold"
+        app:layout_constraintEnd_toEndOf="parent"
         app:layout_constraintStart_toStartOf="parent"
-        app:layout_constraintEnd_toEndOf="parent" />
+        app:layout_constraintTop_toTopOf="parent" />
 
     <androidx.constraintlayout.widget.ConstraintLayout
         android:id="@+id/nameInputContainer"
         android:layout_width="0dp"
         android:layout_height="wrap_content"
         android:layout_marginTop="36dp"
-        app:layout_constraintTop_toBottomOf="@id/title"
-        app:layout_constraintStart_toStartOf="parent"
         app:layout_constraintEnd_toEndOf="parent"
+        app:layout_constraintStart_toStartOf="parent"
+        app:layout_constraintTop_toBottomOf="@id/title"
         app:layout_constraintWidth_percent="0.8" />
 
     <Button
@@ -66,6 +84,7 @@
         app:layout_constraintVertical_bias="0.489" />
 
     <FrameLayout
+        android:id="@+id/frameLayout"
         android:layout_width="72dp"
         android:layout_height="72dp"
         android:layout_gravity="center"
@@ -86,10 +105,10 @@
             android:layout_width="48dp"
             android:layout_height="48dp"
             android:layout_gravity="center"
-            android:src="@android:drawable/ic_btn_speak_now"
             android:background="#FFF"
-            android:scaleType="fitXY"
             android:contentDescription="Speak your name"
+            android:scaleType="fitXY"
+            android:src="@android:drawable/ic_btn_speak_now"
             app:tint="#616161" />
     </FrameLayout>
 

@@ -1,0 +1,29 @@
+{
+  "project_info": {
+    "project_number": "499166777867",
+    "project_id": "jumpingmonkey-88871",
+    "storage_bucket": "jumpingmonkey-88871.firebasestorage.app"
+  },
+  "client": [
+    {
+      "client_info": {
+        "mobilesdk_app_id": "1:499166777867:android:fbfded839b9b569423ed0e",
+        "android_client_info": {
+          "package_name": "com.example.jumpingmonkey"
+        }
+      },
+      "oauth_client": [],
+      "api_key": [
+        {
+          "current_key": "AIzaSyCaXW0TaQC4hT0fmy01qAVAOCanK7V4-tw"
+        }
+      ],
+      "services": {
+        "appinvite_service": {
+          "other_platform_oauth_client": []
+        }
+      }
+    }
+  ],
+  "configuration_version": "1"
+}
