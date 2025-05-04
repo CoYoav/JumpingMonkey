@@ -1,4 +1,4 @@
-package com.example.jumpingmonkey;
+package com.example.jumpingmonkey.physics;
 
 /**
  */

@@ -1,4 +1,6 @@
-package com.example.jumpingmonkey;
+package com.example.jumpingmonkey.animation;
+
+import com.example.jumpingmonkey.physics.Vector2D;
 
 public final class Segment {
     private BranchPoint[] brunchPoints;

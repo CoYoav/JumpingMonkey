@@ -4,9 +4,9 @@
     android:id="@+id/main"
     android:layout_width="match_parent"
     android:layout_height="match_parent"
-    tools:context=".MainActivity">
+    tools:context=".activities.MainActivity">
 
-    <com.example.jumpingmonkey.MyCanvas
+    <com.example.jumpingmonkey.animation.MyCanvas
         android:id="@+id/myCanvas"
         android:layout_width="match_parent"
         android:layout_height="match_parent" />

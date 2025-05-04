@@ -1,10 +1,10 @@
-package com.example.jumpingmonkey;
+package com.example.jumpingmonkey.animation;
 
-import static com.example.jumpingmonkey.Constants.FLOWER_INNER_RADIUS;
-import static com.example.jumpingmonkey.Constants.FLOWER_OUTER_RADIUS;
-import static com.example.jumpingmonkey.Constants.SCROLL_KP;
-import static com.example.jumpingmonkey.Constants.STONE_RADIUS;
-import static com.example.jumpingmonkey.Constants.WIDTH_METERS;
+import static com.example.jumpingmonkey.util.Constants.FLOWER_INNER_RADIUS;
+import static com.example.jumpingmonkey.util.Constants.FLOWER_OUTER_RADIUS;
+import static com.example.jumpingmonkey.util.Constants.SCROLL_KP;
+import static com.example.jumpingmonkey.util.Constants.STONE_RADIUS;
+import static com.example.jumpingmonkey.util.Constants.WIDTH_METERS;
 
 import android.content.Context;
 import android.graphics.Bitmap;
@@ -16,11 +16,13 @@ import android.graphics.Path;
 import android.graphics.Rect;
 import android.graphics.Typeface;
 import android.util.AttributeSet;
-import android.util.Log;
 import android.view.MotionEvent;
 import android.view.View;
 import android.os.Handler;
 import android.os.Looper;
+
+import com.example.jumpingmonkey.R;
+import com.example.jumpingmonkey.physics.Vector2D;
 
 import java.util.ArrayList;
 import java.util.Random;

@@ -1,8 +1,10 @@
-package com.example.jumpingmonkey;
+package com.example.jumpingmonkey.animation;
 
-import static com.example.jumpingmonkey.Constants.WIDTH_METERS;
+import static com.example.jumpingmonkey.util.Constants.WIDTH_METERS;
 
-import android.graphics.Path;
+import com.example.jumpingmonkey.physics.CircleMath;
+import com.example.jumpingmonkey.physics.RubberBandForceCalculator;
+import com.example.jumpingmonkey.physics.Vector2D;
 
 import java.util.ArrayList;
 import java.util.Random;

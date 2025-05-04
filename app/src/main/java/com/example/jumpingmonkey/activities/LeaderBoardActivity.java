@@ -1,4 +1,4 @@
-package com.example.jumpingmonkey;
+package com.example.jumpingmonkey.activities;
 
 import android.content.Intent;
 import android.os.Bundle;
@@ -13,7 +13,10 @@ import androidx.core.graphics.Insets;
 import androidx.core.view.ViewCompat;
 import androidx.core.view.WindowInsetsCompat;
 
-public class LeaderBoard extends AppCompatActivity {
+import com.example.jumpingmonkey.R;
+import com.example.jumpingmonkey.util.ScoreDatabase;
+
+public class LeaderBoardActivity extends AppCompatActivity {
 
     private ScoreDatabase db;
 
@@ -33,7 +36,7 @@ public class LeaderBoard extends AppCompatActivity {
         populateLeaderboard();
 
         findViewById(R.id.start_button).setOnClickListener(v -> {
-            startActivity(new Intent(LeaderBoard.this, MainActivity.class));
+            startActivity(new Intent(LeaderBoardActivity.this, MainActivity.class));
             finish();
         });
     }

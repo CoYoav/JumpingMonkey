@@ -1,4 +1,4 @@
-package com.example.jumpingmonkey;
+package com.example.jumpingmonkey.util;
 
 public class StateManager {
     private String playerName = "";

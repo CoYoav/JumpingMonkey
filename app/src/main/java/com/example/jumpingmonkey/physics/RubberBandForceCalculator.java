@@ -1,11 +1,11 @@
-package com.example.jumpingmonkey;
+package com.example.jumpingmonkey.physics;
 
-import static com.example.jumpingmonkey.Constants.SPRING_K;
+import static com.example.jumpingmonkey.util.Constants.SPRING_K;
 
 public class RubberBandForceCalculator {
 
     // Method to calculate the force applied by the rubber band
-    public static Vector2D calculateForce(Vector2D screwPoint,Vector2D bodyPoint, double restLength) {
+    public static Vector2D calculateForce(Vector2D screwPoint, Vector2D bodyPoint, double restLength) {
         // Calculate the vector from the body point to the screw point
         Vector2D vectorFromBodyToScrew = new Vector2D(screwPoint.getX() - bodyPoint.getX(), screwPoint.getY() - bodyPoint.getY());
 

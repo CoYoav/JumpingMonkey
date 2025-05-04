@@ -1,9 +1,13 @@
-package com.example.jumpingmonkey;
+package com.example.jumpingmonkey.animation;
 
 
-import static com.example.jumpingmonkey.Constants.DRAG_COEFFICIENT;
-import static com.example.jumpingmonkey.Constants.FLOWER_OUTER_RADIUS;
-import static com.example.jumpingmonkey.Constants.WIDTH_METERS;
+import static com.example.jumpingmonkey.util.Constants.DRAG_COEFFICIENT;
+import static com.example.jumpingmonkey.util.Constants.FLOWER_OUTER_RADIUS;
+import static com.example.jumpingmonkey.util.Constants.WIDTH_METERS;
+
+import com.example.jumpingmonkey.util.Constants;
+import com.example.jumpingmonkey.physics.CircleMath;
+import com.example.jumpingmonkey.physics.Vector2D;
 
 public class Monkey {
     private double x, y;

@@ -1,4 +1,4 @@
-package com.example.jumpingmonkey;
+package com.example.jumpingmonkey.activities;
 
 import android.content.Intent;
 import android.os.Bundle;
@@ -14,6 +14,9 @@ import androidx.appcompat.app.AppCompatActivity;
 import androidx.core.graphics.Insets;
 import androidx.core.view.ViewCompat;
 import androidx.core.view.WindowInsetsCompat;
+
+import com.example.jumpingmonkey.R;
+import com.example.jumpingmonkey.util.StateManager;
 
 import java.util.ArrayList;
 import java.util.Locale;
